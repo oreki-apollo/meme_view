@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meme Viewer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Meme Viewer</h1>
+
+    <div class="tabs">
+        <button id="tab-all" class="active" onclick="switchCategory('all')">ALL</button>
+        <button id="tab-anime" onclick="switchCategory('anime')">Anime</button>
+    </div>
+
+    <div id="meme-container"></div>
+
+    <div class="buttons">
+        <button onclick="loadMore(1)">Next Meme</button>
+        <button onclick="loadMore(5)">Load 5</button>
+        <button onclick="loadMore(10)">Load 10</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

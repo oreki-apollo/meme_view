@@ -1,0 +1,53 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f4f4f4;
+}
+h1 {
+    margin-bottom: 10px;
+}
+.tabs {
+    margin: 15px;
+}
+.tabs button {
+    margin: 5px;
+    padding: 10px 20px;
+    border: none;
+    background: #444;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.tabs button:hover {
+    background: #666;
+}
+.tabs .active {
+    background: #008CBA; /* blue highlight */
+}
+.meme {
+    margin: 20px;
+}
+img {
+    max-width: 400px;
+    border-radius: 10px;
+}
+.error {
+    color: red;
+    font-weight: bold;
+    margin: 20px;
+}
+.buttons {
+    margin-bottom: 30px;
+}
+button {
+    margin: 10px;
+    padding: 10px 15px;
+    border: none;
+    background: #333;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button:hover {
+    background: #555;
+}
