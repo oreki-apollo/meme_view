@@ -1,65 +1,78 @@
-let currentCategory = "all"; // default
+const memeContainer = document.getElementById("meme-container");
+const loadingSpinner = document.getElementById("loading-spinner");
+const errorMessage = document.getElementById("error-message");
 
-function getApiUrl(count) {
-    if (currentCategory === "anime") {
-        return `https://meme-api.com/gimme/animememes/${count}`;
+let after = null;
+let currentCategory = "all";
+let seenUrls = new Set();
+
+async function fetchMemes(category = "all") {
+  try {
+    showLoading();
+    let url;
+
+    if (category === "anime") {
+      // Anime specific subreddits
+      const animeSubs = ["animememes", "goodanimemes", "AnimeFunny"];
+      const randomSub = animeSubs[Math.floor(Math.random() * animeSubs.length)];
+      url = `https://www.reddit.com/r/${randomSub}/hot.json?limit=10&after=${after || ""}`;
+    } else {
+      // Generic meme subreddits
+      const allSubs = ["memes", "dankmemes", "wholesomememes"];
+      const randomSub = allSubs[Math.floor(Math.random() * allSubs.length)];
+      url = `https://www.reddit.com/r/${randomSub}/hot.json?limit=10&after=${after || ""}`;
     }
-    return `https://meme-api.com/gimme/${count}`;
-}
 
-function loadMore(count) {
-    fetch(getApiUrl(count))
-    .then(res => {
-        if (!res.ok) {
-            throw new Error("Network response was not ok");
-        }
-        return res.json();
-    })
-    .then(data => {
-        let memes = data.memes || [data];
-        let container = document.getElementById("meme-container");
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Network error");
 
-        memes.forEach(meme => {
-            let div = document.createElement("div");
-            div.classList.add("meme");
+    const data = await response.json();
+    after = data.data.after;
 
-            let img = document.createElement("img");
-            img.src = meme.url;
-            img.alt = "meme";
-            img.onerror = () => {
-                div.innerHTML = `<p class="error">Failed to load meme image.</p>`;
-            };
-
-            div.appendChild(img);
-            container.appendChild(div);
-        });
-    })
-    .catch(err => {
-        let container = document.getElementById("meme-container");
-        let errorMsg = document.createElement("p");
-        errorMsg.classList.add("error");
-        errorMsg.innerText = "Failed to fetch memes. Please try again.";
-        container.appendChild(errorMsg);
-        console.error(err);
+    data.data.children.forEach(post => {
+      const meme = post.data;
+      if (meme.post_hint === "image" && !seenUrls.has(meme.url)) {
+        seenUrls.add(meme.url);
+        const card = document.createElement("div");
+        card.className = "meme-card";
+        card.innerHTML = `
+          <h3>${meme.title}</h3>
+          <img src="${meme.url}" alt="meme" onerror="this.onerror=null;this.parentElement.innerHTML='<p>Failed to load meme.</p>'">
+        `;
+        memeContainer.appendChild(card);
+      }
     });
+
+    hideLoading();
+  } catch (err) {
+    hideLoading();
+    errorMessage.classList.remove("hidden");
+  }
 }
 
-function switchCategory(category) {
-    currentCategory = category;
-
-    // reset active tab highlight
-    document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
-    if (category === "all") {
-        document.getElementById("tab-all").classList.add("active");
-    } else if (category === "anime") {
-        document.getElementById("tab-anime").classList.add("active");
-    }
-
-    // clear memes and load fresh
-    let container = document.getElementById("meme-container");
-    container.innerHTML = "";
-    loadMore(5);
+function showLoading() {
+  loadingSpinner.classList.remove("hidden");
+  errorMessage.classList.add("hidden");
 }
 
-// load first memes on page open
-loadMore(5);
+function hideLoading() {
+  loadingSpinner.classList.add("hidden");
+}
+
+function loadMemes(category) {
+  memeContainer.innerHTML = "";
+  after = null;
+  seenUrls.clear();
+  currentCategory = category;
+  fetchMemes(category);
+}
+
+// Infinite scroll
+window.addEventListener("scroll", () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+    fetchMemes(currentCategory);
+  }
+});
+
+// Load default
+loadMemes("all");
