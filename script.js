@@ -1,4 +1,4 @@
-// script.js
+// script.js (debug version)
 const memeContainer = document.getElementById("meme-container");
 const loader = document.getElementById("loader");
 const errorBox = document.getElementById("error");
@@ -8,22 +8,48 @@ let currentCategory = "";
 let isLoading = false;
 let fetchedUrls = new Set();
 
+function showLoading() {
+  if (loader) loader.classList.remove("hidden");
+}
+
+function hideLoading() {
+  if (loader) loader.classList.add("hidden");
+}
+
 async function fetchMeme(category = "") {
   if (isLoading) return;
   isLoading = true;
-  loader.classList.remove("hidden");
-  errorBox.classList.add("hidden");
+  showLoading();
+  if (errorBox) errorBox.classList.add("hidden");
 
   try {
-    const endpoint = category ? `https://meme-api.com/gimme/${category}` : "https://meme-api.com/gimme";
+    // Correct endpoint handling
+    const endpoint = category 
+      ? `https://meme-api.com/gimme/${category}` 
+      : "https://meme-api.com/gimme";
+    console.log("Fetching memes from:", endpoint);
+
     const res = await fetch(endpoint);
-    if (!res.ok) throw new Error("API error");
+    console.log("Response status:", res.status);
+
+    if (!res.ok) throw new Error("API error: " + res.status);
+
     const data = await res.json();
+    console.log("Fetched meme data:", data);
+
+    // Skip NSFW or spoilers
+    if (data.nsfw || data.spoiler) {
+      console.warn("Skipped NSFW/spoiler meme:", data.title);
+      isLoading = false;
+      hideLoading();
+      return fetchMeme(category);
+    }
 
     // Prevent duplicates
     if (fetchedUrls.has(data.url)) {
+      console.warn("Duplicate meme skipped:", data.url);
       isLoading = false;
-      loader.classList.add("hidden");
+      hideLoading();
       return fetchMeme(category);
     }
     fetchedUrls.add(data.url);
@@ -35,10 +61,12 @@ async function fetchMeme(category = "") {
       <div class="meme-title">${data.title}</div>
     `;
     memeContainer.appendChild(card);
+
   } catch (err) {
-    errorBox.classList.remove("hidden");
+    console.error("Error fetching meme:", err);
+    if (errorBox) errorBox.classList.remove("hidden");
   } finally {
-    loader.classList.add("hidden");
+    hideLoading();
     isLoading = false;
   }
 }

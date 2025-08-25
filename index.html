@@ -10,18 +10,26 @@
   <header>
     <h1>Meme Hub</h1>
     <nav>
-  <button class="tab active" data-category="">All</button>
-  <button class="tab" data-category="AnimeMemes">Anime</button>
-  <button class="tab" data-category="kpopmemes">K-Pop</button>
-  <button class="tab"datacategory="wholesomememes">Wholesome</button>
-</nav>
-
+      <button class="tab active" data-category="">All</button>
+      <button class="tab" data-category="AnimeMemes">Anime</button>
+      <button class="tab" data-category="kpopmemes">K-Pop</button>
+      <button class="tab" data-category="wholesomememes">Wholesome</button>
+    </nav>
   </header>
 
+  <!-- Meme container -->
   <main id="meme-container"></main>
-  <div id="loader" class="hidden">Loading...</div>
-  <div id="error" class="hidden">Failed to load memes. <button onclick="retry()">Retry</button></div>
 
+  <!-- Loader -->
+  <div id="loader" class="hidden">Loading...</div>
+
+  <!-- Error box -->
+  <div id="error" class="hidden">
+    Failed to load memes. 
+    <button onclick="retry()">Retry</button>
+  </div>
+
+  <!-- Script should be at bottom -->
   <script src="script.js"></script>
 </body>
 </html>
