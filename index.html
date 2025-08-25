@@ -3,21 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meme Stream</title>
+  <title>Meme Hub</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Meme Stream</h1>
+    <h1>Meme Hub</h1>
     <nav>
-      <button onclick="loadMemes('all')">All</button>
-      <button onclick="loadMemes('anime')">Anime</button>
-    </nav>
+  <button class="tab active" data-category="">All</button>
+  <button class="tab" data-category="AnimeMemes">Anime</button>
+  <button class="tab" data-category="kpopmemes">K-Pop</button>
+  <button class="tab"datacategory="wholesomememes">Wholesome</button>
+</nav>
+
   </header>
 
   <main id="meme-container"></main>
-  <div id="loading-spinner" class="spinner hidden"></div>
-  <div id="error-message" class="error hidden">Failed to load memes.</div>
+  <div id="loader" class="hidden">Loading...</div>
+  <div id="error" class="hidden">Failed to load memes. <button onclick="retry()">Retry</button></div>
 
   <script src="script.js"></script>
 </body>

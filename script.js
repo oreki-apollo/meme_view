@@ -1,78 +1,70 @@
+// script.js
 const memeContainer = document.getElementById("meme-container");
-const loadingSpinner = document.getElementById("loading-spinner");
-const errorMessage = document.getElementById("error-message");
+const loader = document.getElementById("loader");
+const errorBox = document.getElementById("error");
+const tabs = document.querySelectorAll(".tab");
 
-let after = null;
-let currentCategory = "all";
-let seenUrls = new Set();
+let currentCategory = "";
+let isLoading = false;
+let fetchedUrls = new Set();
 
-async function fetchMemes(category = "all") {
+async function fetchMeme(category = "") {
+  if (isLoading) return;
+  isLoading = true;
+  loader.classList.remove("hidden");
+  errorBox.classList.add("hidden");
+
   try {
-    showLoading();
-    let url;
+    const endpoint = category ? `https://meme-api.com/gimme/${category}` : "https://meme-api.com/gimme";
+    const res = await fetch(endpoint);
+    if (!res.ok) throw new Error("API error");
+    const data = await res.json();
 
-    if (category === "anime") {
-      // Anime specific subreddits
-      const animeSubs = ["animememes", "goodanimemes", "AnimeFunny"];
-      const randomSub = animeSubs[Math.floor(Math.random() * animeSubs.length)];
-      url = `https://www.reddit.com/r/${randomSub}/hot.json?limit=10&after=${after || ""}`;
-    } else {
-      // Generic meme subreddits
-      const allSubs = ["memes", "dankmemes", "wholesomememes"];
-      const randomSub = allSubs[Math.floor(Math.random() * allSubs.length)];
-      url = `https://www.reddit.com/r/${randomSub}/hot.json?limit=10&after=${after || ""}`;
+    // Prevent duplicates
+    if (fetchedUrls.has(data.url)) {
+      isLoading = false;
+      loader.classList.add("hidden");
+      return fetchMeme(category);
     }
+    fetchedUrls.add(data.url);
 
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Network error");
-
-    const data = await response.json();
-    after = data.data.after;
-
-    data.data.children.forEach(post => {
-      const meme = post.data;
-      if (meme.post_hint === "image" && !seenUrls.has(meme.url)) {
-        seenUrls.add(meme.url);
-        const card = document.createElement("div");
-        card.className = "meme-card";
-        card.innerHTML = `
-          <h3>${meme.title}</h3>
-          <img src="${meme.url}" alt="meme" onerror="this.onerror=null;this.parentElement.innerHTML='<p>Failed to load meme.</p>'">
-        `;
-        memeContainer.appendChild(card);
-      }
-    });
-
-    hideLoading();
+    const card = document.createElement("div");
+    card.className = "meme-card";
+    card.innerHTML = `
+      <img src="${data.url}" alt="meme">
+      <div class="meme-title">${data.title}</div>
+    `;
+    memeContainer.appendChild(card);
   } catch (err) {
-    hideLoading();
-    errorMessage.classList.remove("hidden");
+    errorBox.classList.remove("hidden");
+  } finally {
+    loader.classList.add("hidden");
+    isLoading = false;
   }
-}
-
-function showLoading() {
-  loadingSpinner.classList.remove("hidden");
-  errorMessage.classList.add("hidden");
-}
-
-function hideLoading() {
-  loadingSpinner.classList.add("hidden");
-}
-
-function loadMemes(category) {
-  memeContainer.innerHTML = "";
-  after = null;
-  seenUrls.clear();
-  currentCategory = category;
-  fetchMemes(category);
 }
 
 // Infinite scroll
 window.addEventListener("scroll", () => {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
-    fetchMemes(currentCategory);
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+    fetchMeme(currentCategory);
   }
 });
 
-// Load default
-loadMemes("all");
+// Tab switching
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    currentCategory = tab.dataset.category;
+    memeContainer.innerHTML = "";
+    fetchedUrls.clear();
+    fetchMeme(currentCategory);
+  });
+});
+
+function retry() {
+  fetchMeme(currentCategory);
+}
+
+// Initial load
+fetchMeme();
