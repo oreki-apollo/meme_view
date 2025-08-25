@@ -21,13 +21,14 @@
   <main id="meme-container"></main>
 
   <!-- Loader -->
-  <div id="loader" class="hidden">Loading...</div>
+<div id="loader" class="hidden">
+  <div class="spinner"></div>
+</div>
+<div id="error" class="hidden">
+  Failed to load memes. 
+  <button onclick="retry()">Retry</button>
+</div>
 
-  <!-- Error box -->
-  <div id="error" class="hidden">
-    Failed to load memes. 
-    <button onclick="retry()">Retry</button>
-  </div>
 
   <!-- Script should be at bottom -->
   <script src="script.js"></script>
